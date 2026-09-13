@@ -21,3 +21,38 @@ test('valid attacker identity never becomes official; custom pin stays custom',a
 test('receipt correlation requires signer and request ID; no payment inference',async()=>{const req=make(JSON.stringify({type:'sonnet.register.v1',contest_id:'sonnet-2',request_id:'r1'}));const rec=make(JSON.stringify({type:'sonnet.receipt.v1',contest_id:'sonnet-2',request_id:'r1',sender_did:did,status:'accepted'}),'1789298773777114406');let r=await inspect(JSON.stringify([req,rec]),room);assert.equal(r.results[1].receipt.reference,'matched');assert.equal(r.results[1].receipt.authority,'unconfirmed');r=await inspect(JSON.stringify([rec]),room);assert.equal(r.results[0].receipt.reference,'missing');r=await inspect(JSON.stringify([req,req,rec]),room);assert.equal(r.results[2].receipt.reference,'ambiguous')});
 test('JSONL, wrapper, Unicode and unsafe HTML stay text',async()=>{const r=make('<img src=x onerror=alert(1)> ไทย é');const report=await inspect(JSON.stringify(r)+'\n'+JSON.stringify(sample),room);assert.equal(report.results[0].signature,'valid');assert.equal((await inspect(JSON.stringify({room,messages:[r]}),'')).results[0].signature,'valid');await assert.rejects(()=>inspect(JSON.stringify({room:'other',messages:[r]}),room));assert.equal((await check({...r,text:r.text.normalize('NFD')})).signature,'invalid')});
 test('malformed inputs fail intentionally',async()=>{for(const source of ['', 'null','[]']){if(source==='[]')assert.equal((await inspect(source,room)).results.length,0);else if(source==='null')assert.equal((await inspect(source,room)).results[0].signature,'invalid');else await assert.rejects(()=>inspect(source,room))}await assert.rejects(()=>inspect(JSON.stringify(Array(501).fill(sample)),room));await assert.rejects(()=>inspect(JSON.stringify(sample),'../escape'));await assert.rejects(()=>inspect(JSON.stringify(sample),room,'custom','bad'))});
+
+test('BOM exports and room on a single record are accepted',async()=>{
+  assert.equal((await inspect('\uFEFF'+JSON.stringify({room,messages:[sample]}),'')).results[0].signature,'valid');
+  assert.equal((await inspect(JSON.stringify({...sample,room}),'')).results[0].signature,'valid');
+});
+test('invalid wrappers, excessive bytes, depth and room types fail clearly',async()=>{
+  await assert.rejects(()=>inspect('{"messages":{}}',room),/messages/);
+  await assert.rejects(()=>inspect(JSON.stringify(sample),null),/ชื่อห้อง/);
+  await assert.rejects(()=>inspect('ก'.repeat(700000),room),/2 MiB/);
+  assert.throws(()=>parseExact('['.repeat(52)+'0'+']'.repeat(52)),/50/);
+});
+test('lone surrogates cannot verify as the UTF-8 replacement character',async()=>{
+  for(const text of ['\ud800','\udc00','x\ud800y']){
+    const record=make(text);
+    const r=await check(record);
+    assert.equal(r.signature,'invalid');assert.match(r.reason,/Unicode/);
+  }
+  assert.equal((await check(make('ภาษาไทย 🔎'))).signature,'valid');
+});
+test('blank receipt references cannot correlate',async()=>{
+  const req=make(JSON.stringify({type:'sonnet.register.v1',contest_id:'sonnet-2',request_id:''}));
+  const rec=make(JSON.stringify({type:'sonnet.receipt.v1',contest_id:'sonnet-2',request_id:'',sender_did:did,status:'accepted'}));
+  assert.equal((await inspect(JSON.stringify([req,rec]),room)).results[1].receipt.reference,'incomplete');
+});
+test('cancellation stops a batch and reports bounded progress',async()=>{
+  const controller=new AbortController(),progress=[];
+  await assert.rejects(()=>inspect(JSON.stringify([sample,sample]),room,'none','',{signal:controller.signal,onProgress(done,total){progress.push([done,total]);controller.abort()}}),{name:'AbortError'});
+  assert.deepEqual(progress,[[1,2]]);
+  await assert.rejects(()=>inspect(JSON.stringify(sample),room,'none','',{signal:controller.signal}),{name:'AbortError'});
+});
+test('unsupported crypto yields an explicit unsupported result',async()=>{
+  const original=globalThis.crypto;
+  try{Object.defineProperty(globalThis,'crypto',{value:undefined,configurable:true});assert.equal((await check(sample)).signature,'unsupported')}
+  finally{Object.defineProperty(globalThis,'crypto',{value:original,configurable:true})}
+});
