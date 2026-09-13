@@ -28,7 +28,7 @@ test('BOM exports and room on a single record are accepted',async()=>{
 });
 test('invalid wrappers, excessive bytes, depth and room types fail clearly',async()=>{
   await assert.rejects(()=>inspect('{"messages":{}}',room),/messages/);
-  await assert.rejects(()=>inspect(JSON.stringify(sample),null),/ชื่อห้อง/);
+  await assert.rejects(()=>inspect(JSON.stringify(sample),null),/Room name/);
   await assert.rejects(()=>inspect('ก'.repeat(700000),room),/2 MiB/);
   assert.throws(()=>parseExact('['.repeat(52)+'0'+']'.repeat(52)),/50/);
 });

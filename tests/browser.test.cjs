@@ -12,7 +12,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173';
   page.on('request',r=>{if(!r.url().startsWith(base)&&!r.url().startsWith('blob:'))external.push(r.url())});
   page.setDefaultTimeout(10000);
   const check=async(name,fn)=>{await fn();console.log('PASS',name)};
-  const run=async(source)=>{await page.locator('#payload').fill(source);await page.locator('#room').fill('d-sonnet-2-rules');await page.locator('#inspect').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('ตรวจแล้ว'))};
+  const run=async(source)=>{await page.locator('#payload').fill(source);await page.locator('#room').fill('d-sonnet-2-rules');await page.locator('#inspect').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('Inspected'))};
   try{
     await page.goto(base);await page.locator('h1').waitFor();
     await check('initial screen, keyboard order, no third-party requests',async()=>{
@@ -21,9 +21,9 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173';
       assert.deepEqual(external,[]);
     });
     await page.screenshot({path:resolve(__dirname,'../.sites-runtime/desktop-empty.png'),fullPage:true});
-    await check('empty input gives actionable error',async()=>{await page.locator('#inspect').click();await page.locator('#error').filter({hasText:'กรุณาวางข้อความ'}).waitFor()});
+    await check('empty input gives actionable error',async()=>{await page.locator('#inspect').click();await page.locator('#error').filter({hasText:'Paste a message'}).waitFor()});
     await check('real signature and export',async()=>{
-      await page.locator('#demo-valid').click();await page.locator('.result-banner strong').filter({hasText:'ลายเซ็นถูกต้อง'}).waitFor();
+      await page.locator('#demo-valid').click();await page.locator('.result-banner strong').filter({hasText:'Valid signature'}).waitFor();
       const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#download').click()]);
       const data=JSON.parse(readFileSync(await download.path(),'utf8'));
       assert.equal(data.results[0].signature,'valid');assert.equal(data.results[0].text,sample.text);
@@ -53,7 +53,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173';
       await page.locator('#custom-did').fill(sample.from);await run(JSON.stringify(sample));assert.match(await page.locator('#results').textContent(),/CUSTOM MATCH/);
       await page.locator('#trust').selectOption('sonnet');
     });
-    await check('empty batch cannot export',async()=>{await run('[]');assert(await page.locator('#download').isDisabled());assert.match(await page.locator('#results').textContent(),/ไม่มีข้อความ/)});
+    await check('empty batch cannot export',async()=>{await run('[]');assert(await page.locator('#download').isDisabled());assert.match(await page.locator('#results').textContent(),/No messages/)});
     await check('stale sample response never overwrites user changes',async()=>{
       await page.route('**/sample.json',async route=>{await new Promise(r=>setTimeout(r,350));await route.fulfill({json:sample})});
       await page.locator('#demo-valid').click();await page.locator('#payload').fill('my new input');await page.waitForTimeout(500);
@@ -62,7 +62,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173';
     await check('cancel button stops a live batch',async()=>{
       await page.evaluate(()=>{const original=crypto.subtle.verify.bind(crypto.subtle);crypto.subtle.verify=async(...args)=>{await new Promise(r=>setTimeout(r,40));return original(...args)}});
       await page.locator('#payload').fill(JSON.stringify(Array(30).fill(sample)));await page.locator('#inspect').click();await page.locator('#cancel').click();await page.waitForTimeout(120);
-      assert.match(await page.locator('#status').textContent(),/ยกเลิก/);assert(await page.locator('#download').isDisabled());
+      assert.match(await page.locator('#status').textContent(),/cancelled/);assert(await page.locator('#download').isDisabled());
     });
     await page.reload();await page.locator('h1').waitFor();
     await check('500-record batch and input limits',async()=>{
@@ -70,7 +70,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173';
       await page.locator('#payload').fill(JSON.stringify(Array(501).fill({text:'hello'})));await page.locator('#inspect').click();await page.locator('#error').filter({hasText:'500'}).waitFor();
     });
     await check('responsive layout at phone, tablet and desktop widths',async()=>{
-      await page.locator('#demo-valid').click();await page.locator('.result-banner strong').filter({hasText:'ลายเซ็นถูกต้อง'}).waitFor();
+      await page.locator('#demo-valid').click();await page.locator('.result-banner strong').filter({hasText:'Valid signature'}).waitFor();
       for(const width of [320,375,768,1440]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow at ${width}`)}
       await page.setViewportSize({width:375,height:812});await page.evaluate(()=>scrollTo(0,0));await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await page.screenshot({path:resolve(__dirname,'../.sites-runtime/mobile.png'),fullPage:true});
     });

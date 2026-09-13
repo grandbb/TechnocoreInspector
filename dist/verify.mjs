@@ -19,10 +19,10 @@ function wellFormed(text) {
 // Duplicate keys are rejected instead of choosing an ambiguous interpretation.
 export function parseExact(src) {
   let i=0;
-  const fail=()=>{throw new Error(`JSON ไม่ถูกต้องหรือมี key ซ้ำ (ตำแหน่ง ${i+1})`)};
+  const fail=()=>{throw new Error(`Invalid JSON or duplicate key (position ${i+1})`)};
   const ws=()=>{while(/[\t\n\r ]/.test(src[i]??'!'))i++};
   function str(){const start=i++;while(i<src.length){const c=src[i++];if(c==='"')return JSON.parse(src.slice(start,i));if(c==='\\')i++;}fail()}
-  function val(depth=0){if(depth>50)throw new Error('JSON ซ้อนลึกเกิน 50 ชั้น');ws();let c=src[i];
+  function val(depth=0){if(depth>50)throw new Error('JSON nesting exceeds the 50-level limit');ws();let c=src[i];
     if(c==='"')return str();
     if(c==='{'){i++;ws();const o=Object.create(null);if(src[i]==='}'){i++;return o}while(i<src.length){ws();if(src[i]!=='"')fail();const k=str();if(Object.hasOwn(o,k))fail();ws();if(src[i++]!==':')fail();o[k]=val(depth+1);ws();c=src[i++];if(c==='}')return o;if(c!==',')fail()}fail()}
     if(c==='['){i++;ws();const a=[];if(src[i]===']'){i++;return a}while(i<src.length){a.push(val(depth+1));ws();c=src[i++];if(c===']')return a;if(c!==',')fail()}fail()}
@@ -32,52 +32,52 @@ export function parseExact(src) {
   const result=val();ws();if(i!==src.length)fail();return result;
 }
 export function publicKey(did){
-  if(typeof did!=='string'||!/^did:key:z[1-9A-HJ-NP-Za-km-z]{46,48}$/.test(did))throw new Error('DID ต้องเป็น did:key ของ Ed25519 แบบ base58btc');
-  const s=did.slice(9);let n=0n;for(const c of s){const d=alphabet.indexOf(c);if(d<0)throw new Error('DID base58 ไม่ถูกต้อง');n=n*58n+BigInt(d)}
+  if(typeof did!=='string'||!/^did:key:z[1-9A-HJ-NP-Za-km-z]{46,48}$/.test(did))throw new Error('DID must be an Ed25519 did:key encoded with base58btc');
+  const s=did.slice(9);let n=0n;for(const c of s){const d=alphabet.indexOf(c);if(d<0)throw new Error('Invalid base58 DID');n=n*58n+BigInt(d)}
   let hex=n.toString(16);if(hex.length%2)hex='0'+hex;let bytes=Uint8Array.from(hex.match(/../g),x=>parseInt(x,16));
   let zeros=0;while(s[zeros]==='1')zeros++;if(zeros)bytes=Uint8Array.from([...new Uint8Array(zeros),...bytes]);
-  if(bytes.length!==34||bytes[0]!==0xed||bytes[1]!==0x01)throw new Error('ไม่ใช่ Ed25519 public key แบบที่ Technocore รองรับ');
+  if(bytes.length!==34||bytes[0]!==0xed||bytes[1]!==0x01)throw new Error('This Ed25519 public key format is not supported by Technocore');
   return bytes.slice(2);
 }
-function signature(s){if(typeof s!=='string'||!/^[A-Za-z0-9_-]{85}[AQgw]$/.test(s))throw new Error('sig ต้องเป็น base64url canonical 86 ตัวอักษร ไม่เติม padding');return Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'=='),c=>c.charCodeAt(0))}
+function signature(s){if(typeof s!=='string'||!/^[A-Za-z0-9_-]{85}[AQgw]$/.test(s))throw new Error('sig must be 86 canonical base64url characters without padding');return Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'=='),c=>c.charCodeAt(0))}
 export function readInput(source,room){
-  if(typeof source!=='string'||source.length>MAX_BYTES||enc.encode(source).length>MAX_BYTES)throw new Error('ข้อมูลต้องเป็นข้อความขนาดไม่เกิน 2 MiB');
+  if(typeof source!=='string'||source.length>MAX_BYTES||enc.encode(source).length>MAX_BYTES)throw new Error('Input must be text no larger than 2 MiB');
   source=source.replace(/^\uFEFF/,'');
-  if(typeof room!=='string')throw new Error('ชื่อห้องต้องเป็นข้อความ');
-  if(!source.trim())throw new Error('กรุณาวางข้อความก่อนตรวจ');
+  if(typeof room!=='string')throw new Error('Room name must be a string');
+  if(!source.trim())throw new Error('Paste a message before inspecting');
   let data;try{data=parseExact(source)}catch(first){try{const lines=source.trim().split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)throw first;data=lines.map(parseExact)}catch{throw first}}
   const wrapper=data&&!Array.isArray(data)&&Array.isArray(data.messages)?data:null;
-  if(data&&typeof data==='object'&&!Array.isArray(data)&&Object.hasOwn(data,'messages')&&!wrapper)throw new Error('messages ในข้อมูลห้องต้องเป็น JSON array');
+  if(data&&typeof data==='object'&&!Array.isArray(data)&&Object.hasOwn(data,'messages')&&!wrapper)throw new Error('The messages field in a room export must be a JSON array');
   const rows=Array.isArray(data)?data:wrapper?wrapper.messages:[data];
-  if(rows.length>MAX_RECORDS)throw new Error('รองรับสูงสุด 500 ข้อความต่อครั้ง กรุณาแบ่งข้อมูล');
+  if(rows.length>MAX_RECORDS)throw new Error('A batch can contain up to 500 messages. Split your input into smaller batches.');
   const selected=room.trim()||(typeof data?.room==='string'?data.room:'');
-  if(!roomPattern.test(selected))throw new Error('กรุณาระบุชื่อห้อง a-z, 0-9, _ หรือ - ความยาว 1–48 ตัวอักษร');
-  if(wrapper?.room&&wrapper.room!==selected)throw new Error('ชื่อห้องที่กรอกไม่ตรงกับ room ใน JSON');
+  if(!roomPattern.test(selected))throw new Error('Enter a room name of 1–48 characters using a-z, 0-9, _ or -');
+  if(wrapper?.room&&wrapper.room!==selected)throw new Error('The entered room name does not match the room field in the JSON');
   return {room:selected,rows};
 }
 export async function verifyRecord(record,room,trust='sonnet',custom=''){
   const result={room,signature:'unverifiable',identity:'unknown',sender:'',reason:'',text:'',nonce:null,receipt:null};
-  if(!record||typeof record!=='object'||Array.isArray(record)){result.signature='invalid';result.reason='รายการต้องเป็น JSON object';return result}
+  if(!record||typeof record!=='object'||Array.isArray(record)){result.signature='invalid';result.reason='Each record must be a JSON object';return result}
   result.sender=typeof record.from==='string'?record.from:typeof record.did==='string'?record.did:'';
   result.text=typeof record.text==='string'?record.text:'';
   result.nonce=record.nonce??null;result.seq=record.seq??null;result.ts=record.ts??null;
-  if(record.room!==undefined&&record.room!==room){result.signature='invalid';result.reason='ชื่อห้องในข้อความไม่ตรงกับห้องที่ตรวจ';return result}
-  if(record.from!==undefined&&record.did!==undefined&&record.from!==record.did){result.signature='invalid';result.reason='from และ did ไม่ตรงกัน';return result}
+  if(record.room!==undefined&&record.room!==room){result.signature='invalid';result.reason='The room in the message does not match the room being inspected';return result}
+  if(record.from!==undefined&&record.did!==undefined&&record.from!==record.did){result.signature='invalid';result.reason='The from and did fields do not match';return result}
   let payload;try{payload=parseExact(result.text)}catch{}
   if(payload&&typeof payload==='object'&&!Array.isArray(payload))result.payload=payload;
   if(record.sig===undefined||record.sig===null||record.sig===''){
-    result.reason='ไม่มี sig จึงตรวจซ้ำไม่ได้ ชื่อผู้ส่งหรือค่า signed ไม่ใช่หลักฐาน';
+    result.reason='No sig is present, so the signature cannot be verified. A sender name or signed flag is not proof.';
   }else{
     try{
-      if(typeof record.text!=='string')throw new Error('text ต้องเป็น string เดิมจากต้นทาง');
-      if(!wellFormed(record.text))throw new Error('text มี Unicode ที่ไม่สมบูรณ์ จึงไม่สามารถสร้างข้อความ UTF-8 เดิมได้');
-      if(typeof record.nonce!=='string'||!/^\d{1,19}$/.test(record.nonce))throw new Error('nonce ต้องเป็นเลข 1–19 หลักที่เก็บครบทุกหลัก');
+      if(typeof record.text!=='string')throw new Error('text must be the original, unchanged string');
+      if(!wellFormed(record.text))throw new Error('text contains malformed Unicode; the original UTF-8 message cannot be reconstructed');
+      if(typeof record.nonce!=='string'||!/^\d{1,19}$/.test(record.nonce))throw new Error('nonce must contain 1–19 digits with every digit preserved');
       const pk=publicKey(result.sender),sig=signature(record.sig);
       if(!globalThis.crypto?.subtle)throw new Error('CRYPTO_UNAVAILABLE');
       const key=await crypto.subtle.importKey('raw',pk,{name:'Ed25519'},false,['verify']);
       const ok=await crypto.subtle.verify('Ed25519',key,sig,enc.encode(`${room}|${record.nonce}|${record.text}`));
-      result.signature=ok?'valid':'invalid';result.reason=ok?'ลายเซ็นตรงกับ room, nonce และ text ที่นำเข้า':'ลายเซ็นไม่ตรงกับข้อมูลนี้ ตรวจชื่อห้อง ข้อความ nonce และลายเซ็น';
-    }catch(e){if(e.name==='NotSupportedError'||e.message==='CRYPTO_UNAVAILABLE'){result.signature='unsupported';result.reason='เบราว์เซอร์นี้ไม่มี Ed25519 Web Crypto กรุณาใช้ Chrome, Edge, Firefox หรือ Safari รุ่นใหม่ผ่าน HTTPS'}else{result.signature='invalid';result.reason=e.message}}
+      result.signature=ok?'valid':'invalid';result.reason=ok?'The signature matches the imported room, nonce, and text':'The signature does not match. Check the room, text, nonce, and signature.';
+    }catch(e){if(e.name==='NotSupportedError'||e.message==='CRYPTO_UNAVAILABLE'){result.signature='unsupported';result.reason='Ed25519 Web Crypto is unavailable. Use a recent version of Chrome, Edge, Firefox, or Safari over HTTPS.'}else{result.signature='invalid';result.reason=e.message}}
   }
   if(result.signature==='valid'){
     if(trust==='sonnet'&&result.sender===REFEREE){const scope=room==='d-sonnet-2-rules'||room==='d-sonnet-2-results'||/^mb-sonnet-2-(registration|discovery|campaign|submissions|votes)$/.test(room)||/^d-sonnet-2-team-[a-z0-9_-]+$/.test(room);result.identity=scope?'official-reference':'out-of-scope'}
@@ -89,7 +89,7 @@ export async function verifyRecord(record,room,trust='sonnet',custom=''){
 }
 export async function inspect(source,room,trust='sonnet',custom='',{signal,onProgress}={}){
   signal?.throwIfAborted();
-  if(!['sonnet','custom','none'].includes(trust))throw new Error('ตัวเลือก identity ไม่ถูกต้อง');
+  if(!['sonnet','custom','none'].includes(trust))throw new Error('Invalid identity selection');
   if(trust==='custom')publicKey(custom);
   const input=readInput(source,room),results=[];
   for(const row of input.rows){
