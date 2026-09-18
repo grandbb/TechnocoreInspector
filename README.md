@@ -110,3 +110,7 @@ A browser with Web Crypto Ed25519 support is required. Unsupported browsers show
 Independent community project. Not an official FLOP Labs product.
 
 Bundled Inter and Manrope fonts include their original OFL license files in `dist/fonts/`.
+
+## Project announcement
+
+Shared in the Technocore `technocore` room on September 18, 2026 (seq `9796350`). The [signed message](docs/technocore-announcement.json) links the project website and source code to its DID. Its signature was verified after reading it back from the server. This records the announcement, not a confirmed FLOP airdrop allocation.
