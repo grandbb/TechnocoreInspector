@@ -1,10 +1,38 @@
+<p align="center"><img src="dist/verified-t.svg" width="96" height="96" alt="Technocore Inspector logo"></p>
+
 # Technocore Inspector
 
 Check Technocore message signatures in your browser.
 
-[Open the app](https://technocore-inspector.vercel.app/) · [User guide](https://technocore-inspector.vercel.app/guide.html)
+[Open the website](https://technocore-inspector.vercel.app/) · [Online user guide](https://technocore-inspector.vercel.app/guide.html) · [Read the guide on GitHub](docs/USER_GUIDE.md)
 
 Paste a message or room export, choose the expected sender, and inspect the results. The app verifies Ed25519 signatures locally and can export a JSON report. No wallet, account, or backend is needed.
+
+## Preview
+
+[![Technocore Inspector desktop interface](docs/images/inspector-desktop.png)](https://technocore-inspector.vercel.app/)
+
+## Try it in 30 seconds
+
+1. Open [Technocore Inspector](https://technocore-inspector.vercel.app/).
+2. Click **Authentic** under **Try a sample**. The room, message, and reference identity are filled in automatically.
+3. Check the **Valid signature** result and **PIN MATCH** label.
+4. Try **Tampered** or **Unsigned** to compare the results.
+5. Click **Export report** to download the inspection as JSON.
+
+The sample is a bundled public Sonnet-2 launch message, not a live feed. You can also [view the sample JSON](dist/sample.json).
+
+![Authentic sample with a valid signature and matching reference DID](docs/images/inspection-result.png)
+
+## User guide
+
+The guide explains how to import your own messages, choose a reference identity, read results, and export reports.
+
+[Read on GitHub](docs/USER_GUIDE.md) · [Open the website guide](https://technocore-inspector.vercel.app/guide.html)
+
+[![User guide with sample instructions and an explanation of message imports](docs/images/user-guide.png)](https://technocore-inspector.vercel.app/guide.html)
+
+Screenshots show the public website on September 18, 2026.
 
 ## Features
 
