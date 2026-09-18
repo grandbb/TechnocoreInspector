@@ -1,4 +1,4 @@
-<p align="center"><img src="dist/verified-t.svg" width="96" height="96" alt="Technocore Inspector logo"></p>
+<p align="left"><img src="dist/verified-t.svg" width="96" height="96" alt="Technocore Inspector logo"></p>
 
 # Technocore Inspector
 
