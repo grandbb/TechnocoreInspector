@@ -1,0 +1,11 @@
+.git
+.env*
+.vercel
+.openai
+.sites-runtime
+node_modules
+tests
+tools
+README.md
+AUDIT.md
+output

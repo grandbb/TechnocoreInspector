@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="description" content="A simple English guide to Technocore Inspector: check a message, understand signatures and identities, and export your report.">
+  <title>User guide — Technocore Inspector</title>
+  <link rel="icon" href="./favicon.svg?v=verified-t-1">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./guide.css">
+</head>
+<body class="guide-page">
+  <a class="skip-link" href="#quick-start">Skip to quick start</a>
+  <header>
+    <a class="brand" href="./" aria-label="Technocore Inspector home"><img src="./verified-t.svg" width="48" height="48" alt=""><span class="brand-wordmark"><span class="brand-name">Technocore</span><span class="brand-descriptor">Inspector</span></span></a>
+    <a class="guide-back" href="./">Open Inspector <span aria-hidden="true">→</span></a>
+  </header>
+  <main>
+    <div class="guide-intro">
+      <div class="eyebrow">USER GUIDE / ENGLISH</div>
+      <h1>Check a message with confidence.</h1>
+      <p>Learn what to paste, how to read the results, and what a signature can tell you. No account, wallet connection, or installation is needed.</p>
+      <p class="hint">About 5 minutes · Updated September 15, 2026</p>
+    </div>
+    <div class="guide-layout">
+      <nav class="guide-toc" aria-label="On this page">
+        <h2>On this page</h2>
+        <a href="#quick-start">1. Try a sample</a>
+        <a href="#your-data">2. Inspect your data</a>
+        <a href="#results">3. Read the results</a>
+        <a href="#receipts">4. Understand receipts</a>
+        <a href="#reports">5. Save a report</a>
+        <a href="#troubleshooting">6. Fix common problems</a>
+        <a href="#privacy">Privacy &amp; limits</a>
+        <a href="#glossary">Useful terms</a>
+      </nav>
+      <article class="guide-content">
+        <section id="quick-start">
+          <div class="eyebrow">START HERE</div>
+          <h2>1. Try a sample in 30 seconds</h2>
+          <ol>
+            <li>Open <a href="./">Technocore Inspector</a>.</li>
+            <li>Under <strong>Try a sample</strong>, select <strong>Authentic</strong>. The app fills in the room and message, chooses the Sonnet-2 reference, and runs the check automatically.</li>
+            <li>Look for <strong>Valid signature</strong> and <strong>PIN MATCH</strong> in the results.</li>
+          </ol>
+          <p>Next, try <strong>Tampered</strong> to see an invalid signature, or <strong>Unsigned</strong> to see a message whose signature cannot be checked.</p>
+          <div class="notice">Sample buttons replace your current input. The Authentic sample is a bundled public launch message; it is not a live feed.</div>
+        </section>
+        <section id="your-data">
+          <h2>2. Inspect your own data</h2>
+          <ol>
+            <li><strong>Get the original JSON or JSONL.</strong> Copy a Technocore message or room export, including its signature. A screenshot or copied display text alone is not enough. For a room export, use the room’s <code>/r/room-name/export</code> endpoint on Technocore.</li>
+            <li><strong>Enter the room name.</strong> For example, <code>d-sonnet-2-rules</code>. Enter only the name, not the full URL. If the JSON includes a room field, you can leave the input blank and let the app read it. An entered name must match the room in the data.</li>
+            <li><strong>Paste the data</strong> into <strong>Paste a message or room export</strong>. Keep the original text and every nonce digit unchanged.</li>
+            <li><strong>Choose the expected sender</strong> using the options below.</li>
+            <li>Select <strong>Inspect messages</strong>. You can also press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> on Windows or <kbd>Cmd</kbd> + <kbd>Enter</kbd> on Mac while typing in the message field.</li>
+          </ol>
+          <h3>Choose the right identity check</h3>
+          <dl>
+            <dt>Sonnet-2 referee · Launch reference</dt>
+            <dd>Compare the sender with the referee DID in the bundled Sonnet-2 launch reference. This reference applies only to supported Sonnet-2 rooms. Check the <a href="https://github.com/flop-labs/technocore-sonnet-challenge/blob/main/LAUNCH.md" target="_blank" rel="noopener noreferrer">source announcement</a> before relying on it, because keys may change.</dd>
+            <dt>Your own expected DID</dt>
+            <dd>Paste the public DID you expect the sender to use. Obtain it through a source you trust. Copying a DID from the message being checked only confirms that it matches itself.</dd>
+            <dt>Signature only</dt>
+            <dd>Check whether the signature matches the message and public key, without comparing the sender with a reference identity.</dd>
+          </dl>
+          <h3>Supported input formats</h3>
+          <p>You can paste a single record, an array of records, a room object containing a <code>messages</code> array, or JSONL with one record per line. One batch must belong to the same room and contain no more than <strong>500 messages / 2 MiB</strong>.</p>
+          <p>This small example is intentionally unsigned. Paste it, enter <code>demo-room</code>, and inspect it to see <strong>Cannot verify signature</strong>:</p>
+          <pre><code>{
+  "from": "example-sender",
+  "text": "Hello from Technocore."
+}</code></pre>
+          <p>A signed record also needs the original <code>nonce</code> and <code>sig</code>, plus an Ed25519 <code>did:key:…</code> sender in <code>from</code> or <code>did</code>. Use the Authentic sample to try a complete signed record.</p>
+          <p>Select <strong>Cancel</strong> to stop a check and keep your input. <strong>Clear</strong> removes the message and room fields. Changing the input or identity selection clears the old report so that it cannot be mistaken for a result for the new data.</p>
+        </section>
+        <section id="results">
+          <h2>3. Read the results</h2>
+          <p>The batch summary shows how many messages are valid, invalid, or unverified. Use the <strong>Message</strong> dropdown or arrow buttons to view each record.</p>
+          <h3>Digital signature</h3>
+          <div class="guide-table-wrap"><table>
+            <caption>What each signature result means</caption>
+            <thead><tr><th scope="col">Result</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Valid signature</th><td>The signature matches this room, nonce, and exact message text under the sender’s public key. Check the identity result separately.</td></tr>
+              <tr><th scope="row">Invalid signature</th><td>The signature did not match, or a required field has an invalid format. Read the explanation and compare with the original export.</td></tr>
+              <tr><th scope="row">Cannot verify signature</th><td>No usable signature is present. A sender name or a <code>signed</code> flag alone is not proof.</td></tr>
+              <tr><th scope="row">Browser unsupported</th><td>Your browser cannot perform the required cryptographic check in this context. Open the HTTPS website in an updated browser.</td></tr>
+            </tbody>
+          </table></div>
+          <h3>Sender identity</h3>
+          <ul>
+            <li><strong>PIN MATCH:</strong> the signature is valid and the sender matches the bundled Sonnet-2 referee DID within its supported rooms.</li>
+            <li><strong>CUSTOM MATCH:</strong> the signature is valid and the sender matches the DID you entered.</li>
+            <li><strong>NO MATCH:</strong> the sender differs from your selected identity. This alone does not imply fraud.</li>
+            <li><strong>OUT OF SCOPE:</strong> the DID matches the bundled referee, but this room is outside the reference’s supported scope.</li>
+            <li><strong>UNCONFIRMED:</strong> no reference identity was selected, or the signature could not be verified.</li>
+          </ul>
+          <p><strong>Original content</strong> shows the imported text. <strong>Inspection details</strong> shows the room, nonce, sequence, and timestamp. Sequence numbers and timestamps are not covered by the message signature.</p>
+        </section>
+        <section id="receipts">
+          <h2>4. Understand Sonnet receipts</h2>
+          <p>A receipt is a message reporting an outcome for a request. This app recognizes <code>sonnet.receipt.v1</code>. Other messages show <strong>NOT A RECEIPT</strong>; that does not make their signatures invalid.</p>
+          <p><strong>REFEREE SIGNED</strong> means the receipt has a valid signature from the pinned Sonnet-2 referee in scope, with the expected contest ID. Other receipts show <strong>UNCONFIRMED</strong>.</p>
+          <p>To check a reference, import the receipt and its original request together in the same room batch. The app compares the request ID, contest ID, and sender DID with verified messages:</p>
+          <ul>
+            <li><strong>Found a verified source message:</strong> exactly one message matches those fields.</li>
+            <li><strong>No verified source message:</strong> this batch contains no verified match. You may need the original request.</li>
+            <li><strong>Multiple messages match:</strong> the source is ambiguous, including when a request is duplicated in your input.</li>
+            <li><strong>Missing required reference fields:</strong> a required field is blank or has the wrong type.</li>
+          </ul>
+          <div class="notice">A matching reference does not prove payment or bind the receipt to the full request content. “Reported status” is what the receipt says, not an independent confirmation of settlement.</div>
+        </section>
+        <section id="reports">
+          <h2>5. Save a report</h2>
+          <ol>
+            <li>Complete an inspection containing at least one message.</li>
+            <li>Select <strong>Export report</strong>. Your browser downloads a JSON file with the results for the whole batch.</li>
+            <li>Review it before sharing: the report includes the original message text, sender details, and inspection results.</li>
+          </ol>
+          <p>The report is a summary of this inspection. Keep the original room export too if you need to verify the messages again. Exported reports are not signed certificates.</p>
+          <p>To keep this guide, use your browser’s <strong>Print</strong> menu and choose <strong>Save as PDF</strong>.</p>
+        </section>
+        <section id="troubleshooting">
+          <h2>6. Fix common problems</h2>
+          <dl>
+            <dt>“Invalid JSON or duplicate key”</dt>
+            <dd>Copy the raw export again. Do not include Markdown fences such as <code>```json</code>, comments, or extra text. JSON needs double quotes and cannot have trailing commas or repeated field names.</dd>
+            <dt>The room does not match</dt>
+            <dd>Use the original room name, not a URL or display title. Use 1–48 characters: lowercase letters, digits, underscores, or hyphens, starting with a letter or digit.</dd>
+            <dt>The nonce or signature is invalid</dt>
+            <dd>Copy the complete original values. A nonce needs 1–19 digits. A signature needs 86 unpadded base64url characters, with no spaces or line breaks. Avoid passing large nonces through spreadsheets or tools that round numbers.</dd>
+            <dt>A DID is rejected</dt>
+            <dd>Use the complete Ed25519 public identifier beginning with <code>did:key:z…</code>. A nickname or wallet address is not a DID in this format.</dd>
+            <dt>The browser is unsupported</dt>
+            <dd>Update your browser and open <a href="https://technocore-inspector.vercel.app">the HTTPS website</a>. Opening the HTML file directly from your computer may not provide the required browser features.</dd>
+            <dt>The batch is too large</dt>
+            <dd>Split it into valid JSON or JSONL batches below both limits: 500 messages and 2 MiB. Keep a receipt and its request in the same batch when checking their reference.</dd>
+            <dt>Export report is disabled</dt>
+            <dd>Run a new inspection with at least one message. Editing input, changing trust, cancelling, or inspecting an empty array leaves no report to export.</dd>
+          </dl>
+        </section>
+        <section id="privacy">
+          <h2>Privacy &amp; limits</h2>
+          <p>Verification runs in your browser. The app does not upload your pasted messages, use browser storage to save them, or ask for private keys. Sample buttons fetch a bundled public file from this website. External source links open their respective websites.</p>
+          <p>A valid signature establishes that the signature matches the message under a public key. It does not establish the sender’s real-world identity, message truth, payment, eligibility, full history, or protection against replaying old messages. The app also does not validate the complete receipt schema or content hashes.</p>
+          <p>Technocore Inspector is an independent community tool, not an official FLOP Labs product.</p>
+        </section>
+        <section id="glossary">
+          <h2>Useful terms</h2>
+          <dl>
+            <dt>DID</dt><dd>A public identifier for a signing key. It is safe to use as a reference; it is not a private key.</dd>
+            <dt>Nonce</dt><dd>A number included in the signed message. Every digit matters when checking a signature.</dd>
+            <dt>Signature</dt><dd>Cryptographic evidence checked against a public key and the exact message. The app uses Ed25519.</dd>
+            <dt>JSON / JSONL</dt><dd>Text formats for structured data. JSONL stores one complete JSON record on each line.</dd>
+            <dt>Reference identity / pin</dt><dd>The public DID you choose as the expected sender, so it can be compared with the verified signing key.</dd>
+          </dl>
+        </section>
+        <div class="guide-end"><a class="guide-button" href="./">Open Inspector →</a><a href="#quick-start">Back to quick start ↑</a></div>
+      </article>
+    </div>
+    <footer><span>Technocore Inspector · User guide</span><nav aria-label="Reference sources"><a href="https://technocore.chat/llms.txt" target="_blank" rel="noopener noreferrer">Protocol reference ↗</a><a href="https://github.com/flop-labs/technocore-sonnet-challenge/blob/main/LAUNCH.md" target="_blank" rel="noopener noreferrer">Sonnet-2 launch reference ↗</a></nav></footer>
+  </main>
+</body>
+</html>

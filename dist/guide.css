@@ -1,0 +1,47 @@
+.guide-page header .brand{text-decoration:none;color:var(--text)}
+.guide-back{font-size:14px;white-space:nowrap}
+.guide-page main{max-width:1180px}
+.guide-intro{max-width:760px;margin-bottom:36px}
+.guide-intro>p{font-size:17px;line-height:1.8}
+.guide-intro>.hint{font-size:13px;margin-top:14px}
+.guide-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:44px;align-items:start}
+.guide-toc{position:sticky;top:24px;display:grid;gap:5px;border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--panel)}
+.guide-toc h2{margin-bottom:8px}
+.guide-toc a{font-size:14px;color:var(--muted);padding:6px 0;text-decoration:none}
+.guide-toc a:hover{color:var(--accent);text-decoration:underline}
+.guide-content{min-width:0}
+.guide-content section{scroll-margin-top:24px;padding-bottom:28px;margin-bottom:28px;border-bottom:1px solid var(--line)}
+.guide-content h2{font-size:24px;line-height:1.4;margin:0 0 18px;letter-spacing:-.02em}
+.guide-content h3{font-size:18px;margin:26px 0 12px}
+.guide-content p{margin:12px 0;line-height:1.85}
+.guide-content ol,.guide-content ul{padding-left:24px;color:var(--muted);margin:14px 0}
+.guide-content li{padding-left:5px;margin:12px 0;line-height:1.85}
+.guide-content strong{color:var(--text);font-weight:600}
+.guide-content dt{color:var(--text);font-weight:600;margin-top:20px}
+.guide-content dd{margin:7px 0 0;color:var(--muted);line-height:1.85}
+.guide-content code{font:13px/1.7 'Cascadia Code',Consolas,monospace;overflow-wrap:anywhere;color:#d3e5ed}
+.guide-content pre{max-height:none;border:1px solid var(--line);margin:18px 0}
+.guide-content kbd{font:12px system-ui,sans-serif;border:1px solid #516176;border-bottom-width:2px;border-radius:4px;padding:2px 5px;color:var(--text);white-space:nowrap}
+.guide-table-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+.guide-content table{border-collapse:collapse;width:100%;font-size:14px;table-layout:fixed}
+.guide-content caption{text-align:left;padding:14px 16px;background:var(--panel);font-weight:600;color:var(--text)}
+.guide-content th,.guide-content td{text-align:left;vertical-align:top;padding:14px 16px;border-top:1px solid var(--line);overflow-wrap:anywhere;line-height:1.8}
+.guide-content th{font-weight:600}.guide-content th:first-child{width:32%}
+.guide-content td{color:var(--muted)}
+.guide-end{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.guide-button{display:inline-block;padding:12px 18px;border-radius:9px;background:var(--accent);color:#17210b;text-decoration:none;font-weight:600}
+@media(max-width:850px){.guide-layout{grid-template-columns:minmax(0,1fr);gap:28px}.guide-toc{position:static;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px}.guide-toc h2{grid-column:1/-1}.guide-intro{margin-bottom:24px}}
+@media(max-width:420px){.guide-page header{flex-wrap:wrap;gap:10px}.guide-toc{grid-template-columns:1fr}.guide-content h2{font-size:21px}.guide-content th,.guide-content td{padding:10px}.guide-content th:first-child{width:36%}.guide-content table{font-size:13px}}
+@media print{
+  :root{color-scheme:light;--text:#111;--muted:#333;--line:#ccc;--panel:#fff;--accent:#111}
+  .guide-page{background:white;color:#111;font:11pt/1.5 Arial,sans-serif}
+  .guide-page header,.guide-page footer,.guide-toc,.guide-end,.skip-link{display:none}
+  .guide-page main{max-width:none;padding:0}
+  .guide-layout{display:block}.guide-intro{max-width:none;margin-bottom:24px}
+  .guide-content h2,.guide-content h3,.guide-content dt{break-after:avoid}
+  .guide-content section{margin-bottom:18px;padding-bottom:18px}
+  .guide-content pre,.guide-content .notice,.guide-content caption{background:white;color:#111}
+  .guide-content code,.guide-content kbd,.guide-content td{color:#111}
+  .guide-content tr{break-inside:avoid}.guide-table-wrap{overflow:visible}
+  a{color:#111;text-decoration:underline}
+}
