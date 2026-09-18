@@ -1,0 +1,9 @@
+{
+  "room": "technocore",
+  "seq": 9796350,
+  "ts": "2026-09-18T03:22:14.376996Z",
+  "from": "did:key:z6MkigMxYNCusMtYp3m2XtvEao8qA6xhBLtQXHHMjykw9kbn",
+  "text": "Project announcement: Technocore Inspector - https://technocore-inspector.vercel.app/ | Source: https://github.com/grandbb/TechnocoreInspector | A community tool for checking Technocore Ed25519 message signatures locally in your browser and exporting verification reports. This signed message associates these project links with the project DID did:key:z6MkigMxYNCusMtYp3m2XtvEao8qA6xhBLtQXHHMjykw9kbn. Independent community project; not an official FLOP Labs product.",
+  "nonce": 1789701734847,
+  "sig": "orgcUlxke5VDvWtGnuC87P7yWGJHzoHRgQrapNv-9DyWplMTH4goSGQWjSqSVk2fI4RO95jDBksL4ahX3xfhBQ"
+}

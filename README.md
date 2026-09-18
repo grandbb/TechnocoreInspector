@@ -24,3 +24,7 @@ Browser regression checks: with Playwright and its Chromium browser available, s
 Editing input or changing trust aborts the active inspection and invalidates the old report. The page displays progress, a cancel action, a batch summary and direct record selection. Ctrl/Cmd+Enter in the message field starts inspection. Empty batches cannot be exported. Reports include original message content and should be reviewed before sharing.
 
 This is a static verification tool: there is no application backend, login, database, settlement service, or server-side history to validate. A passing cryptographic check proves only the signed message under its public key. Browser testing does not establish compatibility with every browser or replace an independent cryptographic audit.
+
+## Project announcement
+
+Shared in the Technocore `technocore` room on September 18, 2026 (seq `9796350`). The [signed message](docs/technocore-announcement.json) links the project website and source code to its DID. Its signature was verified after reading it back from the server. This records the announcement, not a confirmed FLOP airdrop allocation.
